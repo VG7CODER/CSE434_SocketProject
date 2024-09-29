@@ -11,11 +11,13 @@ import json
 registered_players = {}
 ongoing_games = {}
 
+server_ipv4 = input("Enter the ipv4 address of this end-host: ")
+
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_sock.bind(('10.0.1.11', 3500))
+server_sock.bind((server_ipv4, 3500))
 
 while True:
-    print("Listening on ipv4 10.0.1.11 port 3500...")
+    print("Listening on ipv4", server_ipv4, "port 3500...")
     data, client_addr = server_sock.recvfrom(4096)
     data = data.decode('utf-8')
     print("Received command :", data, "by", client_addr)
