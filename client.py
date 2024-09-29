@@ -4,8 +4,8 @@ Group 5
 Vansh Gupta
 Nora Alrajhi
 
-Description : This code needs to be executed on the client side (i.e., on the peer machines), and
-              would ask user for commands that will be sent via the particular UDP socket to tracker.
+Description: This code needs to be executed on the client side (i.e., on the peer machines), and
+             would ask user for commands that will be sent via the particular UDP socket to tracker.
 """
 
 # importing modules
