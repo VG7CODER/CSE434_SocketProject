@@ -12,8 +12,8 @@ server_ipv4 = input("Enter the ipv4 address for the tracker: ")
 server_addr = (server_ipv4, 3500)
 
 client_ipv4 = input("Enter the ipv4 address for this peer: ")
-client_tport = input("Enter the t-port number for this peer: ")
-client_pport = input("Enter the p-port number for this peer: ")
+client_tport = int(input("Enter the t-port number for this peer: "))
+client_pport = int(input("Enter the p-port number for this peer: "))
 
 c2s_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 c2s_sock.bind((client_ipv4, client_tport))
