@@ -67,6 +67,26 @@ while True:
         if data[:7] == 'SUCCESS':
             print('Exiting...')
             break
+
+    # code to be executed if command sent is start game
+    elif command.split(' ')[0] == 'start':
+        data, _ = c2s_sock.recvfrom(4096)
+        data = data.decode('utf-8')
+        print("Received :", data)
+        if data[:7] == 'SUCCESS':
+            data, _ = c2s_sock.recvfrom(4096)
+            data = data.decode('utf-8')
+            data = json.loads(data)
+            print("Received :")
+            for i in data:
+               print(i)
+
+    # code to be executed if command sent is end game
+    elif command.split(' ')[0] == 'end':
+        data, _ = c2s_sock.recvfrom(4096)
+        data = data.decode('utf-8')
+        print("Received :", data)
+
     else:
         # code to be executed if command sent is registering player or something else
         data, _ = c2s_sock.recvfrom(4096)
