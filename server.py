@@ -11,10 +11,12 @@ Description: This code needs to be executed on the server side (i.e., on the tra
 # importing modules
 import socket
 import json
+import random
 
-# declaring storage dictionaries
+# declaring storage dictionaries and other variables
 registered_players = {}
 ongoing_games = {}
+unique_counter = 0
 
 # asking for the server's current ipv4 address from the user
 server_ipv4 = input("Enter the ipv4 address of this end-host: ")
@@ -110,6 +112,76 @@ while True:
         server_sock.sendto(response.encode('utf-8'), client_addr)
         response = str(len(ongoing_games))
         server_sock.sendto(response.encode('utf-8'), client_addr)
+
+    # code to be executed if start game command is received
+    elif command[0] == 'start':
+        dealer = command[2]
+        n = int(command[3])
+        if len(command) == 5:
+            holes = int(command[4])
+        else:
+            holes = 9
+        player_present = False
+        for i in registered_players:
+            if i == dealer:
+                player_present = True
+                break
+        if player_present is False:
+            response = 'FAILURE - Player not found.'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        elif ((n < 1) or (n > 3)):
+            response = 'FAILURE - Parameter n is not in the proper range of [1, 3].'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        elif (n >= len(registered_players)):
+            response = 'FAILURE - There are not at least n other players registered.'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        elif ((holes < 1) or (holes > 9)):
+            response = 'FAILURE - Parameter holes is not in the proper range of [1, 9].'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        else:
+            c = 0
+            for p_name, p_info in registered_players.items():
+                if p_info[-1] == 'free':
+                    c += 1
+            if c <= n:
+                response = 'FAILURE - There are not at least n other players free.'
+                server_sock.sendto(response.encode('utf-8'), client_addr)
+            else:
+                free_players = [p_name for p_name, p_info in registered_players.items() if (p_info[-1] == 'free' and p_name != dealer)]
+                selected_players = random.sample(free_players, n)
+                unique_counter += 1
+                ongoing_games[unique_counter] = [dealer] + selected_players
+                registered_players[dealer][-1] = 'in-play'
+                players_playing = [(registered_players[dealer][0], registered_players[dealer][1], registered_players[dealer][3])]
+                for i in selected_players:
+                    registered_players[i][-1] = 'in-play'
+                    players_playing.append((registered_players[i][0], registered_players[i][1], registered_players[i][3]))
+                response = "SUCCESS - Game with identifier '" + str(unique_counter) + "' started."
+                server_sock.sendto(response.encode('utf-8'), client_addr)
+                response = json.dumps(players_playing)
+                server_sock.sendto(response.encode('utf-8'), client_addr)
+
+    # code to be executed if end game command is received
+    elif command[0] == 'end':
+        game_id = int(command[1])
+        game_dealer = command[2]
+        game_present = False
+        for i in ongoing_games:
+            if i == game_id:
+                game_present = True
+                break
+        if game_present is False:
+            response = 'FAILURE - Game not found.'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        elif ongoing_games[game_id][0] != game_dealer:
+            response = 'FAILURE - Parameter player is not the dealer of this game.'
+            server_sock.sendto(response.encode('utf-8'), client_addr)
+        else:
+            for i in ongoing_games[game_id]:
+                registered_players[i][-1] = 'free'
+            del ongoing_games[game_id]
+            response = "SUCCESS - Game '" + str(game_id) + "' ended."
+            server_sock.sendto(response.encode('utf-8'), client_addr)
     
     # code to be executed if no valid command is received
     else:
